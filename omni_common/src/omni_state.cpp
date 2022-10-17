@@ -238,7 +238,8 @@ HDCallbackCode HDCALLBACK omni_state_callback(void *pUserData)
   hdGetDoublev(HD_CURRENT_GIMBAL_ANGLES, gimbal_angles);
   // Notice that we are inverting the Z-position value and changing Y <---> Z
   // Position
-  omni_state->position = hduVector3Dd(transform[3][0], -transform[3][2], transform[3][1]);
+  // omni_state->position = hduVector3Dd(transform[3][0], -transform[3][2], transform[3][1]);
+  omni_state->position = hduVector3Dd(transform[3][0], transform[3][1], transform[3][2]);
   omni_state->position /= omni_state->units_ratio;
   // Orientation (quaternion)
   hduMatrix rotation(transform);
@@ -248,7 +249,8 @@ HDCallbackCode HDCALLBACK omni_state_callback(void *pUserData)
                              0.0,  0.0, 1.0, 0.0,
                              0.0,  0.0, 0.0, 1.0);
   rotation_offset.getRotationMatrix(rotation_offset);
-  omni_state->rot = hduQuaternion(rotation_offset * rotation);
+  // omni_state->rot = hduQuaternion(rotation_offset * rotation);
+  omni_state->rot = hduQuaternion(rotation);
   // Velocity estimation
   hduVector3Dd vel_buff(0, 0, 0);
   vel_buff = (omni_state->position * 3 - 4 * omni_state->pos_hist1
@@ -274,8 +276,8 @@ HDCallbackCode HDCALLBACK omni_state_callback(void *pUserData)
   hduVector3Dd feedback;
   // Notice that we are changing Y <---> Z and inverting the Z-force_feedback
   feedback[0] = omni_state->force[0];
-  feedback[1] = omni_state->force[2];
-  feedback[2] = -omni_state->force[1];
+  feedback[1] = omni_state->force[1];
+  feedback[2] = omni_state->force[2];
   hdSetDoublev(HD_CURRENT_FORCE, feedback);
 
   //Get buttons
